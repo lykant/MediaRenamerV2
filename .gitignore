@@ -1,0 +1,6 @@
+log/
+__pycache__/
+deneme.py
+FindDuplicates.py
+FolderIntegrity.py
+MediaRenamer.py
