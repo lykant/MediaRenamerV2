@@ -40,10 +40,10 @@ APP_NAME = Path(__file__).stem
 NAME_FORMAT = "%Y%m%d-%H%M%S"
 DT_FORMAT = "%Y:%m:%d %H:%M:%S"
 ISO_FORMAT = "%Y-%m-%d %H:%M:%S"
-YEARS = range(2018, 2019)
+YEARS = range(2018, 2027)
 BASE = r"X:\_Media"
+BASE = r"D:"
 CMD_DIR = "dir /B /o:d"
-SLASH = "\\"
 NAME_LENGTH = 15
 LINE_LENGTH = 50
 YES = True
@@ -180,9 +180,11 @@ def set_new_name(meta: FileMetadata):
 
     # Prefer EXIF/OS date; fallback to manually assigned new_name
     meta.new_name = meta.date_taken or meta.new_name
+
     # Combine mutual + conflict suffixes
     suffix = f"{meta.mutual_suffix}{meta.conflict_suffix}"
     meta.new_name = f"{meta.new_name}{suffix}"
+
     # Build full new name and path
     meta.new_full_name = concat_full_name(meta.new_name, meta.ext)
     meta.new_full_path = concat_full_path(meta.folder, meta.new_full_name)  # type: ignore
@@ -203,7 +205,7 @@ def concat_full_path(
     """Return full file path by combining folder and full file name."""
     # Build full file path
     full_name = concat_full_name(file_name, ext)  # type: ignore
-    full_path = SLASH.join([folder, full_name])
+    full_path = str(Path(folder) / concat_full_name(file_name, ext))
     return full_path
 
 
@@ -552,7 +554,7 @@ def fetch_list_files(base_folder: str) -> list[FileMetadata]:
 
     for root, _, _ in os.walk(base_folder):
         for ext in FILE_EXTENSIONS:
-            cmd_dir = f'{CMD_DIR} "{root}{SLASH}*.{ext}"'
+            cmd_dir = f'{CMD_DIR} "{root}\\*.{ext}"'
 
             try:
                 # Execute directory listing command
@@ -608,27 +610,27 @@ logger.info(
 register_heif_opener()
 
 # Process each year folder
-# for yyyy in YEARS:
-#     logger.info("\n" + str.center(f" {yyyy} ", LINE_LENGTH, "*"))
+for yyyy in YEARS:
+    logger.info("\n" + str.center(f" {yyyy} ", LINE_LENGTH, "*"))
 
-#     dir_year = f"{BASE}{SLASH}{yyyy}"
-#     list_metadata = fetch_list_files(dir_year)
+    dir_year = f"{BASE}/{yyyy}"
+    list_metadata = fetch_list_files(dir_year)
 
-#     # Extract metadata and rename files
-#     process_files(list_metadata)
+    # Extract metadata and rename files
+    process_files(list_metadata)
 
-#     # Resolve any conflicts found
-#     start_for_conflicts(list_metadata)
-#     process_files(list_metadata, only_conflicts=YES)
+    # Resolve any conflicts found
+    start_for_conflicts(list_metadata)
+    process_files(list_metadata, only_conflicts=YES)
 
 # Test block (optional)
-dir_year = "C:\\Users\\aykan\\Desktop"
-list_metadata = fetch_list_files(dir_year)
-process_files(list_metadata)
+# dir_year = r"C:\Users\aykan\Desktop"
+# list_metadata = fetch_list_files(dir_year)
+# process_files(list_metadata)
 
-# Resolve any conflicts found
-initialize_conflicts(list_metadata)
-process_files(list_metadata, only_conflicts=YES)
+# # Resolve any conflicts found
+# initialize_conflicts(list_metadata)
+# process_files(list_metadata, only_conflicts=YES)
 
 # Final log
 logger.info("=" * LINE_LENGTH)
